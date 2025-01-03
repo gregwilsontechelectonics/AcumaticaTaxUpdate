@@ -9,6 +9,7 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.RegularExpressions;
 
 namespace AcumaticaTaxUpdate
 {
@@ -54,6 +55,48 @@ namespace AcumaticaTaxUpdate
         }
 
         /// <summary>
+        /// Decodes a base64 encoded string
+        /// </summary>
+        /// <param name="value">The base64 encoded string.</param>
+        /// <returns>string</returns>
+        private static string DecryptString(string value)
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                value = Reverse(value).Replace("!","=");
+                if (!IsB64String(value)) throw new Exception("Value is not base64 encoded");
+
+                byte[] data = Convert.FromBase64String(value);
+                return Encoding.UTF8.GetString(data);
+            }
+
+            throw new Exception("Cannot decode empty string");
+        }
+
+        /// <summary>
+        /// Checks is string is base64 encoded.
+        /// </summary>
+        /// <param name="b64String">The base64 encoded string.</param>
+        /// <returns>bool</returns>
+        public static bool IsB64String(string base64String)
+        {
+            if (string.IsNullOrEmpty(base64String) || base64String.Length % 4 != 0
+                || base64String.Contains(" ") || base64String.Contains("\t") || base64String.Contains("\r") || base64String.Contains("\n"))
+                return false;
+
+            try
+            {
+                Convert.FromBase64String(base64String);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogHandler.LogData(ex.Message, "INFORMATION");
+                return false;
+            }
+        }
+
+        /// <summary>
         /// OnStart for the service.
         /// </summary>
         protected override void OnStart(string[] args)
@@ -76,7 +119,7 @@ namespace AcumaticaTaxUpdate
         /// <param name="URL">The API URL the request is being sent to.</param>
         /// <param name="client">The HTTP Client.</param>
         /// <returns>Task<string></returns>
-        public static async Task<string> PostRequest(HttpContent requestContent, string URL, HttpClient client)
+        private static async Task<string> PostRequest(HttpContent requestContent, string URL, HttpClient client)
         {
             HttpResponseMessage response = await client.PostAsync(URL, requestContent);
             var responseContent = response.Content;
@@ -90,11 +133,23 @@ namespace AcumaticaTaxUpdate
         /// <param name="URL">The API URL the request is being sent to.</param>
         /// <param name="client">The HTTP Client.</param>
         /// <returns>Task<string></returns>
-        public static async Task<string> PutRequest(HttpContent requestContent, string URL, HttpClient client)
+        private static async Task<string> PutRequest(HttpContent requestContent, string URL, HttpClient client)
         {
             HttpResponseMessage response = await client.PutAsync(URL, requestContent);
             var responseContent = response.Content;
             return responseContent.ReadAsStringAsync().Result;
+        }
+
+        /// <summary>
+        /// Reverses a string. 
+        /// </summary>
+        /// <param name="value">the string to reverse.</param>
+        /// <returns>Task<string></returns>
+        private static string Reverse(string value)
+        {
+            char[] charArray = value.ToCharArray();
+            Array.Reverse(charArray);
+            return new string(charArray);
         }
 
         /// <summary>
@@ -114,12 +169,12 @@ namespace AcumaticaTaxUpdate
 
             if (context.vw_Taxes_To_Update.Any())
             {
-                var baseURL = ConfigurationManager.AppSettings["APIBaseURL"];
-                var loginURL = baseURL + ConfigurationManager.AppSettings["APIloginURL"];
-                var updateURL = baseURL + ConfigurationManager.AppSettings["APIUpdateURL"];
+                var baseURL = decryptString(ConfigurationManager.AppSettings["APIBaseURL"]);
+                var loginURL = baseURL + decryptString(ConfigurationManager.AppSettings["APIlogin"]);
+                var updateURL = baseURL + decryptString(ConfigurationManager.AppSettings["APIUpdate"]);
                 var data = "{\"name\":\"{uname}\",\"password\":\"{pword}\",\"locale\":\"en-US\",\"tenant\":\"{tenant}\"}";
-                data.Replace("{uname}", ConfigurationManager.AppSettings["APIConUName"]);
-                data.Replace("{pword}", ConfigurationManager.AppSettings["APIConPW"]);
+                data.Replace("{uname}", decryptString(ConfigurationManager.AppSettings["APIConUName"]));
+                data.Replace("{pword}", decryptString(ConfigurationManager.AppSettings["APIConPW"]));
                 data.Replace("{tenant}", ConfigurationManager.AppSettings["APIConTenant"]);
                 var client = new HttpClient();
                 var requestContent = new StringContent(data, Encoding.UTF8, "application/json");
