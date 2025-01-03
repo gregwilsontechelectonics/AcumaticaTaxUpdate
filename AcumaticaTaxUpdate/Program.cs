@@ -5,6 +5,7 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace AcumaticaTaxUpdate
 {
     static class Program
@@ -15,10 +16,12 @@ namespace AcumaticaTaxUpdate
         static void Main()
         {
             ServiceBase[] ServicesToRun;
+
             ServicesToRun = new ServiceBase[]
             {
-                new Service1()
+                new TaxUpdate()
             };
+
             ServiceBase.Run(ServicesToRun);
         }
     }

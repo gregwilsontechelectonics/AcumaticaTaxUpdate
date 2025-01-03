@@ -1,6 +1,6 @@
 ﻿namespace AcumaticaTaxUpdate
 {
-    partial class Service1
+    partial class TaxUpdate
     {
         /// <summary> 
         /// Required designer variable.
