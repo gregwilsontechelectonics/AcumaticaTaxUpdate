@@ -122,11 +122,11 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="tei_tax_rates.cs">
+      <DependentUpon>TaxData.tt</DependentUpon>
+    </Compile>
     <Compile Include="tei_tax_update_logs.cs">
       <DependentUpon>DWTaxLog.tt</DependentUpon>
-    </Compile>
-    <Compile Include="vw_Taxes_To_Update.cs">
-      <DependentUpon>TaxData.tt</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

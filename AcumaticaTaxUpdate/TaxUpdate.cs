@@ -16,7 +16,18 @@ namespace AcumaticaTaxUpdate
     public partial class TaxUpdate : ServiceBase
     {
         private Timer timer = new Timer();
-        
+
+        /// <summary>
+        /// OnStart for the service.
+        /// </summary>
+        protected override void OnStart(string[] args)
+        {
+            LogHandler.LogData("AcumaticaTaxUpdate service started.", "INFORMATION");
+            timer.Elapsed += new ElapsedEventHandler(AcumaticaTaxUpdate);
+            timer.Interval = Convert.ToInt32(ConfigurationManager.AppSettings["MillisecondResponseRate"]);
+            timer.Start();
+        }
+
         /// <summary>
         /// On the Timer elapsed event, this method will check the date and determine if tax updates are necessary.
         /// If so, it will kick off the process to update the necessary tax records.
@@ -24,12 +35,12 @@ namespace AcumaticaTaxUpdate
         private static void AcumaticaTaxUpdate(object source, ElapsedEventArgs e)
         {
             // Check to see if it is the last day of the month.
-            if(CheckDate())
+            if (CheckDate())
             {
                 try
                 {
-                    // Run the process to update the taxes.
-                    UpdateTaxes();
+                   // Run the process to update the taxes.
+                   //UpdateTaxes();
                 }
                 catch (Exception ex)
                 {
@@ -111,7 +122,7 @@ namespace AcumaticaTaxUpdate
             // Update each value in the KeyValuePair list in the data string.
             foreach (KeyValuePair<string, string> kvp in kvpList)
             {
-                data.Replace(kvp.Key, kvp.Value);
+                data = data.Replace(kvp.Key, kvp.Value);
             }
 
             return data;
@@ -139,14 +150,14 @@ namespace AcumaticaTaxUpdate
         /// </summary>
         /// <param name="record">The request data being sent.</param>
         /// <returns>string</returns>
-        private static string GetUpdateDataString(vw_Taxes_To_Update record)
+        private static string GetUpdateDataString(string taxID, string taxRate, string reportingGroup)
         {
             // Get the values necessary for the data string in the request.
             var kvpList = new List<KeyValuePair<string, string>>() {
-                    new KeyValuePair<string, string>("{taxID}", record.TaxID),
+                    new KeyValuePair<string, string>("{taxID}", taxID),
                     new KeyValuePair<string, string>("{startDate}", DateTime.Today.ToString()),
-                    new KeyValuePair<string, string>("{taxRate}", record.TaxRate),
-                    new KeyValuePair<string, string>("{reportinggroup}", record.Reporting_Group)
+                    new KeyValuePair<string, string>("{taxRate}", taxRate),
+                    new KeyValuePair<string, string>("{reportinggroup}", reportingGroup)
                 };
 
             //Create the data string
@@ -190,33 +201,15 @@ namespace AcumaticaTaxUpdate
             var loginResult = await PostRequest(requestContent, loginURL, client);
 
             // If an error is returned, throw an exception, as we can't proceed.
-            if (loginResult.Contains("error:"))
+            if (loginResult.Contains("error"))
             {
+                LogHandler.LogData(loginResult, "ERROR");
                 throw new Exception(loginResult);
             }
 
             return loginResult;
         }
         
-        /// <summary>
-        /// OnStart for the service.
-        /// </summary>
-        protected override void OnStart(string[] args)
-        {
-            LogHandler.LogData("AcumaticaTaxUpdate service started.", "INFORMATION");
-            timer.Elapsed += new ElapsedEventHandler(AcumaticaTaxUpdate);
-            timer.Interval = Convert.ToInt32(ConfigurationManager.AppSettings["MillisecondResponseRate"]);
-            timer.Start();
-        }
-
-        /// <summary>
-        /// OnStop for the service.
-        /// </summary>
-        protected override void OnStop()
-        {
-            LogHandler.LogData("AcumaticaTaxUpdate service stopped.", "INFORMATION");
-        }
-
         /// <summary>
         /// Sends a Post request to the specified URL. 
         /// </summary>
@@ -270,18 +263,53 @@ namespace AcumaticaTaxUpdate
         /// </summary>
         private static void UpdateTaxes()
         {
-            // Get the tax data from the database
+            HttpClient client = GetClient();
+            LogIntoClient(client).Result.ToString();
+            string taxID = "";
+            string reportingGroup = "";
+            string taxRate = "";
+            string updateURL = DecryptString(ConfigurationManager.AppSettings["APIUpdate"]);
             var context = new DWTaxData();
+            var lastmonth = DateTime.Today.AddDays(-21);
 
-            // Check to see if any records need updated.
-            // If so, call the method to update any records that exist.
-            if (context.vw_Taxes_To_Update.Any())
+            // Tax level can only be the following values, and is case sensitive: State, County, SD, City
+            // Pass through taxID, raxRate, and reportingGroup
+            // Update State Taxes
+            var records = context.tei_tax_rates.Where(r => r.StateUpdated > lastmonth);
+
+            if (records.Any())
             {
-                HttpClient client = GetClient();
-                LogIntoClient(client).Result.ToString();
-                string updateURL = DecryptString(ConfigurationManager.AppSettings["APIUpdate"]);
-                // Loop through and update the existing records.
-                context.vw_Taxes_To_Update.AsEnumerable().Select(r => UpdateTaxRecord(r, updateURL, client)).ToList();
+                List<tei_tax_rates> stateTaxes = new List<tei_tax_rates>
+                {
+                    records.Where(r => r.TaxType == "Sales").FirstOrDefault(),
+                    records.Where(r => r.TaxType == "Use").FirstOrDefault()
+                };
+
+                stateTaxes.Select(r => UpdateTaxRecord(r.State + r.TaxType, r.RateState, r.TaxType == "Use" ? "Use" : "State", updateURL, client)).ToList();
+            }
+
+            // Update County Taxes
+            records = context.tei_tax_rates.Where(r => r.CountyUpdated > lastmonth);
+
+            if (records.Any())
+            {
+                records.AsEnumerable().Select(r => UpdateTaxRecord(r.z2t_ID + "County" + r.TaxType, r.RateCounty, r.TaxType == "Use" ? "Use" : "Local", updateURL, client)).ToList();
+            }
+
+            // Update Special District Taxes
+            records = context.tei_tax_rates.Where(r => r.SDUpdated > lastmonth);
+
+            if (records.Any())
+            {
+                records.AsEnumerable().Select(r => UpdateTaxRecord(r.z2t_ID + "SD" + r.TaxType, r.RateSpecialDistrict, r.TaxType == "Use" ? "Use" : "Local", updateURL, client)).ToList();
+            }
+
+            // Update Special District Taxes
+            records = context.tei_tax_rates.Where(r => r.CityUpdated > lastmonth);
+
+            if (records.Any())
+            {
+                records.AsEnumerable().Select(r => UpdateTaxRecord(r.z2t_ID + "City" + r.TaxType, r.RateCity, r.TaxType == "Use" ? "Use" : "Local", updateURL, client)).ToList();
             }
         }
         
@@ -292,18 +320,19 @@ namespace AcumaticaTaxUpdate
         /// <param name="URL">The API URL the request is being sent to.</param>
         /// <param name="client">The HTTP Client.</param>
         /// <returns>Task<string></returns>
-        private async static Task<string> UpdateTaxRecord(vw_Taxes_To_Update record, string URL, HttpClient client)
+        private async static Task<string> UpdateTaxRecord(string taxID, string taxRate, string reportingGroup, string URL, HttpClient client)
         {
             try
             {
-                //Create and Put the request
-                string data = GetUpdateDataString(record);
+                
+                // Create and Put the request
+                string data = GetUpdateDataString(taxID, taxRate, reportingGroup);
                 LogHandler.LogData("Updating tax rate: " + data, "INFORMATION");
                 var requestContent = new StringContent(data, Encoding.UTF8, "application/json");
                 var updateResult = await PutRequest(requestContent, URL, client);
 
                 // If an error is returned, log it, and proceed to the next record.
-                if (updateResult.Contains("error:"))
+                if (updateResult.Contains("error"))
                 {
                     LogHandler.LogData("Error updating tax rate: " + updateResult, "ERROR");
                 }
@@ -316,6 +345,14 @@ namespace AcumaticaTaxUpdate
                 LogHandler.LogData(ex.Message, "ERROR", ex.StackTrace);
                 return string.Empty;
             }
+        }
+
+        /// <summary>
+        /// OnStop for the service.
+        /// </summary>
+        protected override void OnStop()
+        {
+            LogHandler.LogData("AcumaticaTaxUpdate service stopped.", "INFORMATION");
         }
     }
 }

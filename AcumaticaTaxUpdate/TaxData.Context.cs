@@ -25,6 +25,6 @@ namespace AcumaticaTaxUpdate
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<vw_Taxes_To_Update> vw_Taxes_To_Update { get; set; }
+        public virtual DbSet<tei_tax_rates> tei_tax_rates { get; set; }
     }
 }

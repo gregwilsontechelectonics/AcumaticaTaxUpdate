@@ -5,7 +5,7 @@
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
       <Diagram DiagramId="ddb14410569c41d9b165dff23ec8711e" Name="Diagram1">
-        <EntityTypeShape EntityType="DataWarehouseModel1.vw_Taxes_To_Update" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="DataWarehouseModel1.tei_tax_rates" Width="1.5" PointX="3.375" PointY="0.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

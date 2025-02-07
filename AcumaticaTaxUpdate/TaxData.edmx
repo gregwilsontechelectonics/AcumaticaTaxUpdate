@@ -5,66 +5,104 @@
     <!-- SSDL content -->
     <edmx:StorageModels>
     <Schema Namespace="DataWarehouseModel1.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'DataWarehouse.dbo.vw_Taxes_To_Update' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
-        <EntityType Name="vw_Taxes_To_Update">
+        <EntityType Name="tei_tax_rates">
           <Key>
-            <PropertyRef Name="Reporting Group" />
+            <PropertyRef Name="Id" />
           </Key>
-          <Property Name="TaxID" Type="varchar" MaxLength="8000" />
-          <Property Name="Description" Type="varchar" MaxLength="281" />
-          <Property Name="Tax Type" Type="varchar" MaxLength="10" />
-          <Property Name="TaxRate" Type="varchar" MaxLength="255" />
-          <Property Name="Reporting Group" Type="varchar" MaxLength="5" Nullable="false" />
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="z2t_ID" Type="varchar" MaxLength="10" />
+          <Property Name="ZipCode" Type="varchar" MaxLength="10" />
+          <Property Name="TaxRate" Type="varchar" MaxLength="10" />
+          <Property Name="TaxType" Type="varchar" MaxLength="10" />
+          <Property Name="RateState" Type="varchar" MaxLength="10" />
+          <Property Name="ReportingCodeState" Type="varchar" MaxLength="10" />
+          <Property Name="RateCounty" Type="varchar" MaxLength="255" />
+          <Property Name="ReportingCodeCounty" Type="varchar" MaxLength="255" />
+          <Property Name="RateCity" Type="varchar" MaxLength="255" />
+          <Property Name="ReportingCodeCity" Type="varchar" MaxLength="255" />
+          <Property Name="RateSpecialDistrict" Type="varchar" MaxLength="255" />
+          <Property Name="ReportingCodeSpecialDistrict" Type="varchar" MaxLength="255" />
+          <Property Name="City" Type="varchar" MaxLength="255" />
+          <Property Name="PostOffice" Type="varchar" MaxLength="255" />
+          <Property Name="State" Type="varchar" MaxLength="2" />
+          <Property Name="County" Type="varchar" MaxLength="255" />
+          <Property Name="ShippingTaxable" Type="varchar" MaxLength="10" />
+          <Property Name="PrimaryRecord" Type="varchar" MaxLength="10" />
+          <Property Name="StateUpdated" Type="date" />
+          <Property Name="CountyUpdated" Type="date" />
+          <Property Name="SDUpdated" Type="date" />
+          <Property Name="CityUpdated" Type="date" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'DataWarehouse.dbo.vw_Zip2Tax_City_Taxes' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityContainer Name="DataWarehouseModel1StoreContainer">
-          <EntitySet Name="vw_Taxes_To_Update" EntityType="Self.vw_Taxes_To_Update" store:Type="Views" store:Schema="dbo">
-            <DefiningQuery>SELECT 
-    [vw_Taxes_To_Update].[TaxID] AS [TaxID], 
-    [vw_Taxes_To_Update].[Description] AS [Description], 
-    [vw_Taxes_To_Update].[Tax Type] AS [Tax Type], 
-    [vw_Taxes_To_Update].[TaxRate] AS [TaxRate], 
-    [vw_Taxes_To_Update].[Reporting Group] AS [Reporting Group], 
-    [vw_Taxes_To_Update].[z2t_ID] AS [z2t_ID]
-    FROM [dbo].[vw_Taxes_To_Update] AS [vw_Taxes_To_Update]</DefiningQuery>
-          </EntitySet>
+          <EntitySet Name="tei_tax_rates" EntityType="Self.tei_tax_rates" Schema="dbo" store:Type="Tables" />
         </EntityContainer>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="DataWarehouseModel1" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
-        <EntityType Name="vw_Taxes_To_Update">
-          <Key>
-            <PropertyRef Name="Reporting_Group" />
-          </Key>
-          <Property Name="TaxID" Type="String" MaxLength="8000" FixedLength="false" Unicode="false" />
-          <Property Name="Description" Type="String" MaxLength="281" FixedLength="false" Unicode="false" />
-          <Property Name="Tax_Type" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="TaxRate" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
-          <Property Name="Reporting_Group" Type="String" MaxLength="5" FixedLength="false" Unicode="false" Nullable="false" />
-          <Property Name="z2t_ID" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-        </EntityType>
         <EntityContainer Name="DWTaxData" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="vw_Taxes_To_Update" EntityType="Self.vw_Taxes_To_Update" />
+          <EntitySet Name="tei_tax_rates" EntityType="DataWarehouseModel1.tei_tax_rates" />
         </EntityContainer>
+        <EntityType Name="tei_tax_rates">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="z2t_ID" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="ZipCode" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="TaxRate" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="TaxType" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="RateState" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="ReportingCodeState" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="RateCounty" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="ReportingCodeCounty" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="RateCity" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="ReportingCodeCity" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="RateSpecialDistrict" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="ReportingCodeSpecialDistrict" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="City" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="PostOffice" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="State" Type="String" MaxLength="2" FixedLength="false" Unicode="false" />
+          <Property Name="County" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="ShippingTaxable" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="PrimaryRecord" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="StateUpdated" Type="DateTime" Precision="0" />
+          <Property Name="CountyUpdated" Type="DateTime" Precision="0" />
+          <Property Name="SDUpdated" Type="DateTime" Precision="0" />
+          <Property Name="CityUpdated" Type="DateTime" Precision="0" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="DataWarehouseModel1StoreContainer" CdmEntityContainer="DWTaxData">
-          <EntitySetMapping Name="vw_Taxes_To_Update">
-            <EntityTypeMapping TypeName="DataWarehouseModel1.vw_Taxes_To_Update">
-              <MappingFragment StoreEntitySet="vw_Taxes_To_Update">
-                <ScalarProperty Name="TaxID" ColumnName="TaxID" />
-                <ScalarProperty Name="Description" ColumnName="Description" />
-                <ScalarProperty Name="Tax_Type" ColumnName="Tax Type" />
+          <EntitySetMapping Name="tei_tax_rates">
+            <EntityTypeMapping TypeName="DataWarehouseModel1.tei_tax_rates">
+              <MappingFragment StoreEntitySet="tei_tax_rates">
+                <ScalarProperty Name="CityUpdated" ColumnName="CityUpdated" />
+                <ScalarProperty Name="SDUpdated" ColumnName="SDUpdated" />
+                <ScalarProperty Name="CountyUpdated" ColumnName="CountyUpdated" />
+                <ScalarProperty Name="StateUpdated" ColumnName="StateUpdated" />
+                <ScalarProperty Name="PrimaryRecord" ColumnName="PrimaryRecord" />
+                <ScalarProperty Name="ShippingTaxable" ColumnName="ShippingTaxable" />
+                <ScalarProperty Name="County" ColumnName="County" />
+                <ScalarProperty Name="State" ColumnName="State" />
+                <ScalarProperty Name="PostOffice" ColumnName="PostOffice" />
+                <ScalarProperty Name="City" ColumnName="City" />
+                <ScalarProperty Name="ReportingCodeSpecialDistrict" ColumnName="ReportingCodeSpecialDistrict" />
+                <ScalarProperty Name="RateSpecialDistrict" ColumnName="RateSpecialDistrict" />
+                <ScalarProperty Name="ReportingCodeCity" ColumnName="ReportingCodeCity" />
+                <ScalarProperty Name="RateCity" ColumnName="RateCity" />
+                <ScalarProperty Name="ReportingCodeCounty" ColumnName="ReportingCodeCounty" />
+                <ScalarProperty Name="RateCounty" ColumnName="RateCounty" />
+                <ScalarProperty Name="ReportingCodeState" ColumnName="ReportingCodeState" />
+                <ScalarProperty Name="RateState" ColumnName="RateState" />
+                <ScalarProperty Name="TaxType" ColumnName="TaxType" />
                 <ScalarProperty Name="TaxRate" ColumnName="TaxRate" />
-                <ScalarProperty Name="Reporting_Group" ColumnName="Reporting Group" />
+                <ScalarProperty Name="ZipCode" ColumnName="ZipCode" />
                 <ScalarProperty Name="z2t_ID" ColumnName="z2t_ID" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
