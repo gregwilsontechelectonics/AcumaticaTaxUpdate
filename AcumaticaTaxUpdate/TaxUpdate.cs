@@ -18,6 +18,14 @@ namespace AcumaticaTaxUpdate
         private Timer timer = new Timer();
 
         /// <summary>
+        /// Service initializer.
+        /// </summary>
+        public TaxUpdate()
+        {
+            InitializeComponent();
+        }
+
+        /// <summary>
         /// OnStart for the service.
         /// </summary>
         protected override void OnStart(string[] args)
@@ -40,7 +48,7 @@ namespace AcumaticaTaxUpdate
                 try
                 {
                    // Run the process to update the taxes.
-                   //UpdateTaxes();
+                   UpdateTaxes();
                 }
                 catch (Exception ex)
                 {
@@ -249,15 +257,7 @@ namespace AcumaticaTaxUpdate
             Array.Reverse(charArray);
             return new string(charArray);
         }
-
-        /// <summary>
-        /// Service initializer.
-        /// </summary>
-        public TaxUpdate()
-        {
-            InitializeComponent();
-        }
-
+        
         /// <summary>
         /// Retrieves the tax data from the database, and determines if updates are necessary.
         /// </summary>
